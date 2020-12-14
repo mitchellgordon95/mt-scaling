@@ -1,6 +1,8 @@
 task train : sockeye : scripts
     < train_src=$TRAIN_SUBSET_SRC@subset_data
     < train_trg=$TRAIN_SUBSET_TRG@subset_data
+    < src_vocab=$SOCKEYE_VOCAB_SRC@build_vocab
+    < trg_vocab=$SOCKEYE_VOCAB_TRG@build_vocab
     < dev_src=$DEV_SRC@bpe_data
     < dev_trg=$DEV_TRG@bpe_data
     > model
@@ -18,6 +20,8 @@ task train : sockeye : scripts
     echo $lr > $learning_rate
 
     $scripts/train_transformer.sh -o $model \
+    --source-vocab $src_vocab \
+    --target-vocab $trg_vocab \
     --initial-learning-rate=$lr \
     --source $train_src \
     --target $train_trg \

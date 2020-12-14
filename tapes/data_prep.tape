@@ -28,6 +28,17 @@ task bpe_data : subword_nmt
   subword-nmt apply-bpe -c $TRG_VOCAB < $tok_dev_trg > $DEV_TRG
 }
 
+task build_vocab : sockeye 
+  < train_src=$TRAIN_SRC@bpe_data
+  < train_trg=$TRAIN_TRG@bpe_data
+  > SOCKEYE_VOCAB_SRC
+  > SOCKEYE_VOCAB_TRG
+  :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
+  # Builds a sockeye-compatible vocab from the whole training data
+  python -m sockeye.vocab -i $train_src -o $SOCKEYE_VOCAB_SRC
+  python -m sockeye.vocab -i $train_trg -o $SOCKEYE_VOCAB_TRG
+}
+
 task subset_data
   < train_src=$TRAIN_SRC@bpe_data
   < train_trg=$TRAIN_TRG@bpe_data

@@ -20,8 +20,7 @@
     --decode-and-evaluate-use-cpu \
     --disable-device-locking \
     --keep-last-params=10 \
-    --max-num-epochs=100 \
-    --max-updates=300000 \
+    --max-updates=250000 \
     "$@"
     # These are default
     # --transformer-positional-embedding-type=learned \

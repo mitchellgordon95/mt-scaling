@@ -15,9 +15,8 @@
     --max-num-checkpoint-not-improved 10 \
     --batch-type=word \
     --batch-size=4096 \
+    --decode-and-evaluate=0 \
     --checkpoint-frequency=5000 \
-    --decode-and-evaluate=-1 \
-    --decode-and-evaluate-use-cpu \
     --disable-device-locking \
     --keep-last-params=10 \
     --max-updates=250000 \

@@ -1,4 +1,4 @@
-task train : sockeye : scripts
+task train : scripts
     < train_src=$TRAIN_SUBSET_SRC@subset_data
     < train_trg=$TRAIN_SUBSET_TRG@subset_data
     < src_vocab=$SOCKEYE_VOCAB_SRC@build_vocab
@@ -15,7 +15,8 @@ task train : sockeye : scripts
     :: .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
 
     # Use a learning rate depending on the model size
-    lr=$(python -c "import math; print(0.003239 - 0.00013952 * math.log(2 * $num_layers * (4 * $model_size**2 + 2 * $model_size * $ff_size)))")
+    # lr=$(python -c "import math; print(0.003239 - 0.00013952 * math.log(2 * $num_layers * (4 * $model_size**2 + 2 * $model_size * $ff_size)))")
+    lr=0.0002
     echo "Using LR $lr"
     echo $lr > $learning_rate
 
@@ -33,7 +34,7 @@ task train : sockeye : scripts
     --transformer-attention-heads=$attn_heads \
 }
 
-task bleu_dev : sockeye : scripts
+task bleu_dev : scripts
     < src=$DEV_SRC@bpe_data
     < trg=$DEV_TRG@bpe_data
     < model=$model@train
@@ -43,7 +44,7 @@ task bleu_dev : sockeye : scripts
 
   python3 -m sockeye.translate \
     -m $model \
-    $(scripts/device.sh) \
+    $($scripts/device.sh) \
     -i $src \
     -o out.all \
     --output-type translation_with_score \
@@ -61,7 +62,7 @@ task bleu_dev : sockeye : scripts
 }
 
 
-task score_dev : sockeye : scripts
+task score_dev : scripts
     < src=$DEV_SRC@bpe_data
     < trg=$DEV_TRG@bpe_data
     < model=$model@train
@@ -72,7 +73,7 @@ task score_dev : sockeye : scripts
 
   python3 -m sockeye.score \
     -m $model \
-    $(scripts/device.sh) \
+    $($scripts/device.sh) \
     --source $src \
     --target $trg \
     --batch-size 100 \

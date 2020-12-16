@@ -23,7 +23,19 @@ axes.set_ylabel("Dev Cross Entropy")
 axes.set_title(f'Data Scaling')
 axes.set_xscale('log')
 axes.set_yscale('log')
+axes.set_xlim((table['line_count'].min() / 2, table['line_count'].max() * 2))
+axes.set_ylim((table['ent_dev'].min() / 2, table['ent_dev'].max() * 2))
 
 axes.scatter(table['line_count'], table['ent_dev'])
 
 fig.savefig(f'plots_out/data_scaling.png')
+
+fig, axes = plt.subplots()
+axes.set_xlabel("Dev Cross Entropy")
+axes.set_ylabel("Dev BLEU")
+axes.set_xlim((table['ent_dev'].max() + 1, 0))
+axes.set_title(f'Data Scaling Cross Entropy vs. BLEU')
+
+axes.scatter(table['ent_dev'], table['bleu_dev'])
+
+fig.savefig(f'plots_out/data_scaling_bleu.png')

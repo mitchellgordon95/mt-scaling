@@ -28,7 +28,7 @@ task bpe_data : subword_nmt
   subword-nmt apply-bpe -c $TRG_VOCAB < $tok_dev_trg > $DEV_TRG
 }
 
-task build_vocab : sockeye 
+task build_vocab
   < train_src=$TRAIN_SRC@bpe_data
   < train_trg=$TRAIN_TRG@bpe_data
   > SOCKEYE_VOCAB_SRC

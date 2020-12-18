@@ -20,9 +20,9 @@
     --disable-device-locking \
     --keep-last-params=10 \
     --max-updates=250000 \
-    --transformer-positional-embedding-type=learned \
     "$@"
     # Defaults
+    # --transformer-positional-embedding-type=fixed \
     # --transformer-preprocess=n \
     # --transformer-postprocess=dr \
     # --weight-init=xavier \

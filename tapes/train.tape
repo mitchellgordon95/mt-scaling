@@ -50,7 +50,6 @@ task bleu_dev : scripts
     --output-type translation_with_score \
     --beam-size 12 \
     --batch-size 8 \
-    --max-input-len 300 \
     --disable-device-locking
 
     cat out.all | cut -f 1 > $out_scores

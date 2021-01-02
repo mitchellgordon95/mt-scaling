@@ -5,16 +5,27 @@ task bpe_data : subword_nmt
   > DEV_TRG
   > SRC_VOCAB
   > TRG_VOCAB
-  :: SRC=(Lang: deen="de" ruen="ru" zhen="zh")
-  :: TRG=(Lang: deen="en" ruen="en" zhen="en")
+  :: SRC=(Lang: deen="de" ruen="ru" zhen="zh" soen="so" swen="sw" tlen="tl")
+  :: TRG=(Lang: deen="en" ruen="en" zhen="en" soen="en" swen="en" tlen="en")
   :: bpe_size=(BPE: 30000)
   # We use a GPU here even though we don't need it. See https://git.io/JIKDI
   :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
-  tok_train_src="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.train.tok.$SRC" 
-  tok_train_trg="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.train.tok.$TRG" 
 
-  tok_dev_src="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.dev.tok.$SRC"
-  tok_dev_trg="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.dev.tok.$TRG"
+  if [[ $SRC == "so" ]] || [[ $SRC == "sw" ]] || [[ $SRC == "tl" ]]; then
+    tok_train_src="/exp/kduh/data/material/bitext/$SRC-$TRG/BUILD.$SRC"
+    tok_train_trg="/exp/kduh/data/material/bitext/$SRC-$TRG/BUILD.$TRG"
+
+    tok_dev_src="/exp/kduh/data/material/bitext/$SRC-$TRG/ANALYSIS2-text.$SRC"
+    tok_dev_trg="/exp/kduh/data/material/bitext/$SRC-$TRG/ANALYSIS2-text.$TRG"
+  else
+    tokcln="tok"
+    if [[ $SRC == "zh" ]]; then tokcln="cln"; fi
+    tok_train_src="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.train.${tokcln}.$SRC" 
+    tok_train_trg="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.train.${tokcln}.$TRG" 
+
+    tok_dev_src="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.dev.tok.$SRC"
+    tok_dev_trg="/exp/scale18/mt/data/$SRC-$TRG/generaldomain/generaldomain.dev.tok.$TRG"
+  fi
 
   # Learn the BPE vocab from the training data
   subword-nmt learn-bpe -s $bpe_size < $tok_train_src > $SRC_VOCAB

@@ -7,12 +7,13 @@ task train : scripts
     < dev_trg=$DEV_TRG@bpe_data
     > model
     > learning_rate
-    :: num_layers=(Layers: 6)
-    :: ff_size=(FeedForward: 2048)
-    :: model_size=(ModelSize: 512)
+    :: num_layers=(Layers: 6 3 1)
+    :: ff_size=(FeedForward: 2048 2496 1024 512)
+    :: model_size=(ModelSize: 512 624 256 128)
     :: attn_heads=(AttnHeads: 8)
+    :: .resource_flags=(Layers: 6=$resource_flags_v100 3=$resource_flags_train 1=$resource_flags_train)
     :: pyenv=@
-    :: .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
+    :: .submitter=@ .action_flags=@ {
 
     # Use a learning rate depending on the model size
     # lr=$(python -c "import math; print(0.003239 - 0.00013952 * math.log(2 * $num_layers * (4 * $model_size**2 + 2 * $model_size * $ff_size)))")

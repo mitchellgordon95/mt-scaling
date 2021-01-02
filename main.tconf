@@ -31,10 +31,11 @@ global {
   resource_flags_16g="-l mem_free=16g"
 
   # SGE: flags for training a model
-  resource_flags_train="-q gpu.q@@rtx -l gpu=1,mem_free=4g,h_rt=120:00:00"
+  resource_flags_train="-q gpu.q@@rtx -l gpu=1,mem_free=16g,h_rt=48:00:00"
+  resource_flags_v100="-q gpu.q@@v100 -l gpu=1,mem_free=16g,h_rt=48:00:00"
 
   # SGE: flags for decoding
-  resource_flags_decode="-q gpu.q@@2080 -l gpu=1,mem_free=4g,h_rt=120:00:00"
+  resource_flags_decode="-q gpu.q@@2080 -l gpu=1,mem_free=4g,h_rt=48:00:00"
 
   # SGE: flags for notifying about job completion (put in your email address!)
   action_flags="-m ae -M mitchell.gordon95@gmail.com"

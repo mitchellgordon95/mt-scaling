@@ -16,10 +16,9 @@
     --batch-type=word \
     --batch-size=4096 \
     --decode-and-evaluate=0 \
-    --checkpoint-frequency=5000 \
     --disable-device-locking \
     --keep-last-params=10 \
-    --max-updates=250000 \
+    --max-updates=350000 \
     "$@"
     # Defaults
     # --transformer-positional-embedding-type=fixed \

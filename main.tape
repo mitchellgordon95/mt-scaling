@@ -17,8 +17,18 @@ plan data_scaling {
   reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: *) * (Layers: 1) * (ModelSize: 128) * (FeedForward: 512)
 }
 
+plan continue {
+  # WMT
+  reach continue_train via (Lang: deen ruen zhen) * (DataPercent: *) * (Layers: 6) * (ModelSize: 512) * (FeedForward: 2048)
+  reach continue_train via (Lang: deen ruen zhen) * (DataPercent: *) * (Layers: 6) * (ModelSize: 624) * (FeedForward: 2496)
+  reach continue_train via (Lang: deen ruen zhen) * (DataPercent: *) * (Layers: 3) * (ModelSize: 512) * (FeedForward: 2048)
+  reach continue_train via (Lang: deen ruen zhen) * (DataPercent: *) * (Layers: 1) * (ModelSize: 512) * (FeedForward: 2048)
+  reach continue_train via (Lang: deen ruen zhen) * (DataPercent: *) * (Layers: 1) * (ModelSize: 256) * (FeedForward: 1024)
+  reach continue_train via (Lang: deen ruen zhen) * (DataPercent: *) * (Layers: 1) * (ModelSize: 128) * (FeedForward: 512)
+}
+
 plan low_resource {
-  reach bleu_dev, score_dev via (Lang: swen soen tlen) * (DataPercent: 100 50 25 12.5 6.25) * (Layers: 6) * (ModelSize: 512) * (FeedForward: 2048)
+  reach bleu_dev, score_dev via (Lang: swen soen tlen) * (DataPercent: 100 50 25 12.5 6.25) * (Layers: 6) * (ModelSize: 512) * (FeedForward: 2048) * (CheckpointFreq: 1000)
 }
 
 summary data_scaling {

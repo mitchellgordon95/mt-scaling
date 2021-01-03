@@ -11,6 +11,7 @@ task train : scripts
     :: ff_size=(FeedForward: 2048 2496 1024 512)
     :: model_size=(ModelSize: 512 624 256 128)
     :: attn_heads=(AttnHeads: 8)
+    :: checkpoint_freq=(CheckpointFreq: 5000 1000)
     :: .resource_flags=(Layers: 6=$resource_flags_v100 3=$resource_flags_train 1=$resource_flags_train)
     :: pyenv=@
     :: .submitter=@ .action_flags=@ {
@@ -33,6 +34,59 @@ task train : scripts
     --transformer-feed-forward-num-hidden=$ff_size \
     --transformer-model-size=$model_size \
     --transformer-attention-heads=$attn_heads \
+    --checkpoint-frequency=$checkpoint_freq
+}
+
+task continue_train : scripts
+    < train_src=$TRAIN_SUBSET_SRC@subset_data
+    < train_trg=$TRAIN_SUBSET_TRG@subset_data
+    < src_vocab=$SOCKEYE_VOCAB_SRC@build_vocab
+    < trg_vocab=$SOCKEYE_VOCAB_TRG@build_vocab
+    < dev_src=$DEV_SRC@bpe_data
+    < dev_trg=$DEV_TRG@bpe_data
+    < model=$model@train
+    :: num_layers=$num_layers@train
+    :: ff_size=$ff_size@train
+    :: model_size=$model_size@train
+    :: attn_heads=$attn_heads@train
+    :: checkpoint_freq=$checkpoint_freq@train
+    :: .resource_flags=(Layers: 6=$resource_flags_v100 3=$resource_flags_train 1=$resource_flags_train)
+    :: pyenv=@
+    :: .submitter=@ .action_flags=@ {
+
+    # Use a learning rate depending on the model size
+    lr=0.0002
+
+    set +e
+    $scripts/train_transformer.sh -o $model \
+    --source-vocab $src_vocab \
+    --target-vocab $trg_vocab \
+    --initial-learning-rate=$lr \
+    --source $train_src \
+    --target $train_trg \
+    --validation-source $dev_src \
+    --validation-target $dev_trg \
+    --num-layers=$num_layers \
+    --transformer-feed-forward-num-hidden=$ff_size \
+    --transformer-model-size=$model_size \
+    --transformer-attention-heads=$attn_heads \
+    --checkpoint-frequency=$checkpoint_freq 2> tmp_err > tmp_out
+
+    status=$?
+
+   if [[ $(head -n 1 tmp_err | awk '{print $1}') == "Refusing" ]]; then
+     echo 0 > exitcode
+     exit 0
+   fi
+
+   if [[ $status == 0 ]]; then
+     cat tmp_err >> $(dirname $model)/job.out
+     echo 0 > exitcode
+     exit 0
+   fi
+
+   echo $status > exitcode
+   exit $status
 }
 
 task bleu_dev : scripts

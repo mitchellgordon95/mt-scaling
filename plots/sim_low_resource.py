@@ -11,7 +11,7 @@ import math
 try: os.mkdir('plots_out')
 except FileExistsError: pass
 
-ducttape = subprocess.Popen(["ducttape", "main.tape", "-C", "main.tconf", "-p", 'low_resource', "summary"], stdout=subprocess.PIPE)
+ducttape = subprocess.Popen(["ducttape", "main.tape", "-C", "main.tconf", "-p", 'sim_low_resource', "summary"], stdout=subprocess.PIPE)
 tabular = subprocess.Popen(['tabular'], stdin=ducttape.stdout, stdout=subprocess.PIPE)
 csv = subprocess.check_output(["grep", "-o", "^[^#]*"], stdin=tabular.stdout).decode('ascii')
 
@@ -19,7 +19,7 @@ table = pd.read_csv(StringIO(csv), sep="\s+")
 table['bleu_dev'] = pd.to_numeric(table['bleu_dev'], errors='coerce')
 table['ent_dev'] = pd.to_numeric(table['ent_dev'], errors='coerce')
 
-table['params'] = 2 * 6 * (4 * 512**2 + 2 * 512 * 4 * 512)
+table['params'] = 2 * 3 * (4 * 512**2 + 2 * 512 * 4 * 512)
 
 def format_num(num):
     if num > 1000 and num < 1000000:
@@ -44,7 +44,7 @@ for lang in table['Lang'].unique():
     fig, axes = plt.subplots()
     axes.set_xlabel("Data Size (Bytes)")
     axes.set_ylabel("Dev Cross Entropy")
-    axes.set_title(f'Data Scaling {lang}')
+    axes.set_title(f'Simulated Low-Resource Data Scaling {lang}')
     axes.set_xscale('log')
     axes.set_yscale('log')
     # axes.set_xlim((rel['data_bytes'].min() / 2, rel['data_bytes'].max() * 2))
@@ -52,12 +52,15 @@ for lang in table['Lang'].unique():
 
     for params in sorted(table['params'].unique()):
         params_rel = rel[rel['params'] == params].sort_values('data_bytes')
-        scatter = axes.scatter(params_rel['data_bytes'], params_rel['ent_dev'], label=f'{format_num(params)} Params')
+        scatter = axes.scatter(params_rel['data_bytes'], params_rel['ent_dev'])
         predicted_line = modeling_fn(params_rel['data_bytes'], a_D, log_D_C)
-        axes.plot(params_rel['data_bytes'], predicted_line, color=scatter.get_facecolor()[0])
+        axes.plot(params_rel['data_bytes'], predicted_line, color=scatter.get_facecolor()[0], label="Predicted")
+
+    actual_a_D, actual_log_DC = {'deen': (0.35, 13.43), 'ruen': (0.38, 13.81), 'zhen': (0.43, 12.73)}.get(lang)
+    axes.plot(params_rel['data_bytes'], modeling_fn(params_rel['data_bytes'], actual_a_D, actual_log_DC), color='purple', label='Actual')
 
     axes.legend()
-    fig.savefig(f'plots_out/{lang}_data_scaling.png')
+    fig.savefig(f'plots_out/{lang}_sim_lr_data_scaling.png')
 
     # Cross-Entropy vs. BLEU
     fig, axes = plt.subplots()
@@ -74,4 +77,4 @@ for lang in table['Lang'].unique():
     axes.plot(rel['ent_dev'], predicted_bleu, label=f'y = {best_fit.slope:.2f}x + {best_fit.intercept:.2f}')
     axes.legend()
 
-    fig.savefig(f'plots_out/{lang}_data_scaling_bleu.png')
+    fig.savefig(f'plots_out/{lang}_sim_lr_data_scaling_bleu.png')

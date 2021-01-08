@@ -11,7 +11,9 @@ task train : scripts
     :: ff_size=(FeedForward: 2048 2496 1024 512)
     :: model_size=(ModelSize: 512 624 256 128)
     :: attn_heads=(AttnHeads: 8)
-    :: checkpoint_freq=(CheckpointFreq: 5000 1000)
+    :: checkpoint_freq=(CheckpointFreq: 5000 1000 500)
+    :: batch_size=(BatchSize: 4096 500)
+    :: label_smoothing=(LabelSmoothing: 0.1 0)
     :: .resource_flags=(Layers: 6=$resource_flags_v100 3=$resource_flags_train 1=$resource_flags_train)
     :: pyenv=@
     :: .submitter=@ .action_flags=@ {
@@ -34,7 +36,9 @@ task train : scripts
     --transformer-feed-forward-num-hidden=$ff_size \
     --transformer-model-size=$model_size \
     --transformer-attention-heads=$attn_heads \
-    --checkpoint-frequency=$checkpoint_freq
+    --checkpoint-frequency=$checkpoint_freq \
+    --batch-size=$batch_size \
+    --label-smoothing=$label_smoothing
 }
 
 task continue_train : scripts

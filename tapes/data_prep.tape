@@ -7,7 +7,7 @@ task bpe_data : subword_nmt
   > TRG_VOCAB
   :: SRC=(Lang: deen="de" ruen="ru" zhen="zh" soen="so" swen="sw" tlen="tl")
   :: TRG=(Lang: deen="en" ruen="en" zhen="en" soen="en" swen="en" tlen="en")
-  :: bpe_size=(BPE: 30000)
+  :: bpe_size=(BPE: 30000 2000)
   # We use a GPU here even though we don't need it. See https://git.io/JIKDI
   :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
 
@@ -55,8 +55,8 @@ task subset_data
   < train_trg=$TRAIN_TRG@bpe_data
   > TRAIN_SUBSET_SRC
   > TRAIN_SUBSET_TRG
-  :: seed=(ShuffleSeed: 42)
-  :: data_percent=(DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1)
+  :: seed=(ShuffleSeed: 42 1 2)
+  :: data_percent=(DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025 0.0125)
   :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
 
   lines=$(wc -l $train_src | awk '{print $1}')

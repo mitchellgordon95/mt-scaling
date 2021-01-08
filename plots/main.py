@@ -7,13 +7,21 @@ import os
 import scipy.optimize
 import scipy.stats
 import math
+import sys
 
 try: os.mkdir('plots_out')
 except FileExistsError: pass
 
-ducttape = subprocess.Popen(["ducttape", "main.tape", "-C", "main.tconf", "-p", 'data_scaling', "summary"], stdout=subprocess.PIPE)
-tabular = subprocess.Popen(['tabular'], stdin=ducttape.stdout, stdout=subprocess.PIPE)
-csv = subprocess.check_output(["grep", "-o", "^[^#]*"], stdin=tabular.stdout).decode('ascii')
+if len(sys.argv) <= 1:
+    ducttape = subprocess.Popen(["ducttape", "main.tape", "-C", "main.tconf", "-p", 'data_scaling', "summary"], stdout=subprocess.PIPE)
+    tabular = subprocess.Popen(['tabular'], stdin=ducttape.stdout, stdout=subprocess.PIPE)
+    csv = subprocess.check_output(["grep", "-o", "^[^#]*"], stdin=tabular.stdout).decode('ascii')
+else:
+    with open(sys.argv[1], "r")  as fd:
+        csv = ""
+        for line in fd.readlines():
+            if line[0] != "#":
+                csv += line
 
 table = pd.read_csv(StringIO(csv), sep="\s+")
 table['bleu_dev'] = pd.to_numeric(table['bleu_dev'], errors='coerce')
@@ -60,6 +68,10 @@ for lang in table['Lang'].unique():
         predicted_line = joint_modeling_fn((params_rel['data_bytes'], params_rel['params']), a_N, log_N_C, a_D, log_D_C)
         axes.plot(params_rel['data_bytes'], predicted_line, color=scatter.get_facecolor()[0])
 
+    # Predicted results for 500M params
+    # predicted_line = joint_modeling_fn((params_rel['data_bytes'], np.array([500000000.0] * params_rel['data_bytes'].size)), a_N, log_N_C, a_D, log_D_C)
+    # axes.plot(params_rel['data_bytes'], predicted_line, label="500M Params")
+
     # Infinite params line
     inf_params = np.array([float('inf')] * params_rel['data_bytes'].size)
     inf_params_line = joint_modeling_fn((params_rel['data_bytes'], inf_params), a_N, log_N_C, a_D, log_D_C)
@@ -79,12 +91,30 @@ for lang in table['Lang'].unique():
     axes.scatter(rel['ent_dev'], rel['bleu_dev'])
 
     # Linear best fit line
-    linear_rel = rel[rel['ent_dev'] < 3]
-    best_fit = scipy.stats.linregress(linear_rel['ent_dev'], linear_rel['bleu_dev'])
-    predicted_bleu = linear_rel['ent_dev'] * best_fit.slope + best_fit.intercept
-    axes.plot(linear_rel['ent_dev'], predicted_bleu, label=f'y = {best_fit.slope:.2f}x + {best_fit.intercept:.2f}')
-    axes.legend()
+    # linear_rel = rel[rel['ent_dev'] < 3]
+    # best_fit = scipy.stats.linregress(linear_rel['ent_dev'], linear_rel['bleu_dev'])
+    # predicted_bleu = linear_rel['ent_dev'] * best_fit.slope + best_fit.intercept
+    # axes.plot(linear_rel['ent_dev'], predicted_bleu, label=f'y = {best_fit.slope:.2f}x + {best_fit.intercept:.2f}')
 
+    # Exp decay fit
+    def exp_decay(ent, C, k):
+        return C * np.exp(k * ent)
+    (C, k), _ = scipy.optimize.curve_fit(exp_decay, rel['ent_dev'], rel['bleu_dev'], maxfev=5000, p0=[1, -0.5])
+    axes.plot(rel['ent_dev'].sort_values(), exp_decay(rel['ent_dev'].sort_values(), C, k), label=f'y = {C:.2f} e ^ ({k:.2f} x)')
+
+    # Power law fit
+    # def power_law(ent, C, a):
+    #     return (C / ent)**a
+    # (C, a), _ = scipy.optimize.curve_fit(power_law, rel['ent_dev'], rel['bleu_dev'], maxfev=5000, p0=[1, 0.5])
+    # axes.plot(rel['ent_dev'].sort_values(), power_law(rel['ent_dev'].sort_values(), C, a), label=f'y = ({C:.2} / x) ^ {a:.2f}')
+
+    # Logarithmic fit
+    # def logarithmic(ent, C, k):
+    #     return -C * np.log(ent / k)
+    # (C, k), _ = scipy.optimize.curve_fit(logarithmic, rel['ent_dev'], rel['bleu_dev'], maxfev=5000, p0=[1, 0.5])
+    # axes.plot(rel['ent_dev'].sort_values(), logarithmic(rel['ent_dev'].sort_values(), C, k), label=f'y = -{C:.2} * log(x / {k:.2f})')
+
+    axes.legend()
     fig.savefig(f'plots_out/{lang}_data_scaling_bleu.png')
 
     # Params vs. Cross-Entropy

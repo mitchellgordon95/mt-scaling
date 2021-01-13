@@ -7,6 +7,8 @@ import os
 import scipy.optimize
 import scipy.stats
 import math
+from main import format_num
+
 
 try: os.mkdir('plots_out')
 except FileExistsError: pass
@@ -20,12 +22,6 @@ table['bleu_dev'] = pd.to_numeric(table['bleu_dev'], errors='coerce')
 table['ent_dev'] = pd.to_numeric(table['ent_dev'], errors='coerce')
 
 table['params'] = 2 * 6 * (4 * 512**2 + 2 * 512 * 4 * 512)
-
-def format_num(num):
-    if num > 1000 and num < 1000000:
-        return f'{int(num / 1000)}K'
-    if num > 1000000:
-        return f'{int(num / 1000000)}M'
 
 for lang in table['Lang'].unique():
 

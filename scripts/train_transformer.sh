@@ -16,7 +16,6 @@
     --decode-and-evaluate=0 \
     --disable-device-locking \
     --keep-last-params=10 \
-    --max-updates=350000 \
     "$@"
     # Defaults
     # --transformer-positional-embedding-type=fixed \

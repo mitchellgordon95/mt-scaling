@@ -14,7 +14,8 @@ task train : scripts
     :: checkpoint_freq=(CheckpointFreq: 5000 1000 500)
     :: batch_size=(BatchSize: 4096 500)
     :: label_smoothing=(LabelSmoothing: 0.1 0)
-    :: .resource_flags=(Layers: 6=$resource_flags_v100 3=$resource_flags_train 1=$resource_flags_train)
+    :: max_updates=(MaxUpdates: 350000 0)
+    :: .resource_flags=(Layers: 6=$resource_flags_v100 3=$resource_flags_v100 1=$resource_flags_train)
     :: pyenv=@
     :: .submitter=@ .action_flags=@ {
 
@@ -38,6 +39,7 @@ task train : scripts
     --transformer-attention-heads=$attn_heads \
     --checkpoint-frequency=$checkpoint_freq \
     --batch-size=$batch_size \
+    --max-updates=$max_updates \
     --label-smoothing=$label_smoothing
 }
 

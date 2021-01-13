@@ -9,7 +9,7 @@ task bpe_data : subword_nmt
   :: TRG=(Lang: deen="en" ruen="en" zhen="en" soen="en" swen="en" tlen="en")
   :: bpe_size=(BPE: 30000 2000)
   # We use a GPU here even though we don't need it. See https://git.io/JIKDI
-  :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
+  :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_decode .action_flags=@ {
 
   if [[ $SRC == "so" ]] || [[ $SRC == "sw" ]] || [[ $SRC == "tl" ]]; then
     tok_train_src="/exp/kduh/data/material/bitext/$SRC-$TRG/BUILD.$SRC"
@@ -44,7 +44,7 @@ task build_vocab
   < train_trg=$TRAIN_TRG@bpe_data
   > SOCKEYE_VOCAB_SRC
   > SOCKEYE_VOCAB_TRG
-  :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
+  :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_decode .action_flags=@ {
   # Builds a sockeye-compatible vocab from the whole training data
   python -m sockeye.vocab -i $train_src -o $SOCKEYE_VOCAB_SRC
   python -m sockeye.vocab -i $train_trg -o $SOCKEYE_VOCAB_TRG
@@ -57,7 +57,7 @@ task subset_data
   > TRAIN_SUBSET_TRG
   :: seed=(ShuffleSeed: 42 1 2)
   :: data_percent=(DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025 0.0125)
-  :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
+  :: pyenv=@ {
 
   lines=$(wc -l $train_src | awk '{print $1}')
   subset_size=$(python -c "print(int($lines * $data_percent / 100))")
@@ -73,4 +73,29 @@ task subset_data
   cut -f1 subset > $TRAIN_SUBSET_SRC
   cut -f2 subset > $TRAIN_SUBSET_TRG
   rm subset
+}
+
+
+task subset_stats : scripts : subword_nmt
+  < subset_src=$TRAIN_SUBSET_SRC@subset_data
+  < subset_trg=$TRAIN_SUBSET_TRG@subset_data
+  < dev_src=$DEV_SRC@bpe_data
+  < dev_trg=$DEV_TRG@bpe_data
+  < src_vocab=$SRC_VOCAB@bpe_data
+  < trg_vocab=$TRG_VOCAB@bpe_data
+  > src_dev_coverage trg_dev_coverage 
+  > src_vocab_overlap trg_vocab_overlap 
+  :: bpe_size=$bpe_size@bpe_data
+  :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_decode .action_flags=@ {
+  
+  python $scripts/coverage.py $subset_src $dev_src | awk '{print $1}' > $src_dev_coverage
+  python $scripts/coverage.py $subset_trg $dev_trg | awk '{print $1}' > $trg_dev_coverage
+
+  cat $subset_src | sed -r 's/@@( |$)//g' > de_bpe_subset_src
+  cat $subset_trg | sed -r 's/@@( |$)//g' > de_bpe_subset_trg
+  subword-nmt learn-bpe -s $bpe_size < de_bpe_subset_src > subset_src_vocab
+  subword-nmt learn-bpe -s $bpe_size < de_bpe_subset_trg > subset_trg_vocab
+
+  python $scripts/coverage.py subset_src_vocab $src_vocab | awk '{print $1}' > $src_vocab_overlap
+  python $scripts/coverage.py subset_trg_vocab $trg_vocab | awk '{print $1}' > $trg_vocab_overlap
 }

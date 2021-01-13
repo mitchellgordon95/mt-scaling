@@ -7,25 +7,28 @@ import os
 import scipy.optimize
 import scipy.stats
 import math
+import sys
+from main import format_num
 
 try: os.mkdir('plots_out')
 except FileExistsError: pass
 
-ducttape = subprocess.Popen(["ducttape", "main.tape", "-C", "main.tconf", "-p", 'sim_low_resource', "summary"], stdout=subprocess.PIPE)
-tabular = subprocess.Popen(['tabular'], stdin=ducttape.stdout, stdout=subprocess.PIPE)
-csv = subprocess.check_output(["grep", "-o", "^[^#]*"], stdin=tabular.stdout).decode('ascii')
+if len(sys.argv) <= 1:
+    ducttape = subprocess.Popen(["ducttape", "main.tape", "-C", "main.tconf", "-p", 'sim_low_resource', "summary"], stdout=subprocess.PIPE)
+    tabular = subprocess.Popen(['tabular'], stdin=ducttape.stdout, stdout=subprocess.PIPE)
+    csv = subprocess.check_output(["grep", "-o", "^[^#]*"], stdin=tabular.stdout).decode('ascii')
+else:
+    with open(sys.argv[1], "r")  as fd:
+        csv = ""
+        for line in fd.readlines():
+            if line[0] != "#":
+                csv += line
 
 table = pd.read_csv(StringIO(csv), sep="\s+")
 table['bleu_dev'] = pd.to_numeric(table['bleu_dev'], errors='coerce')
 table['ent_dev'] = pd.to_numeric(table['ent_dev'], errors='coerce')
 
-table['params'] = 2 * 3 * (4 * 512**2 + 2 * 512 * 4 * 512)
-
-def format_num(num):
-    if num > 1000 and num < 1000000:
-        return f'{int(num / 1000)}K'
-    if num > 1000000:
-        return f'{int(num / 1000000)}M'
+table['params'] = 2 * table['Layers'] * (4 * 512**2 + 2 * 512 * 512 * 4)
 
 for lang in table['Lang'].unique():
 
@@ -50,12 +53,15 @@ for lang in table['Lang'].unique():
     # axes.set_xlim((rel['data_bytes'].min() / 2, rel['data_bytes'].max() * 2))
     # axes.set_ylim((rel['ent_dev'].min() / 1.1, rel['ent_dev'].max() * 1.1))
 
-    for params in sorted(table['params'].unique()):
-        params_rel = rel[rel['params'] == params].sort_values('data_bytes')
-        scatter = axes.scatter(params_rel['data_bytes'], params_rel['ent_dev'])
-        predicted_line = modeling_fn(params_rel['data_bytes'], a_D, log_D_C)
-        axes.plot(params_rel['data_bytes'], predicted_line, color=scatter.get_facecolor()[0], label="Predicted")
+    random_baseline = {"deen": 11.70, "ruen": 11.48, "zhen": 11.52}.get(lang)
+    axes.axhline(random_baseline, linestyle='dashed', label="Random Baseline")
 
+    for params in sorted(table['params'].unique()):
+        params_rel = rel[(rel['params'] == params)].sort_values('data_bytes')
+        scatter = axes.scatter(params_rel['data_bytes'], params_rel['ent_dev'], label=f"{format_num(params)} Params")
+
+    predicted_line = modeling_fn(params_rel['data_bytes'], a_D, log_D_C)
+    axes.plot(params_rel['data_bytes'], predicted_line, color=scatter.get_facecolor()[0], label="Predicted")
     actual_a_D, actual_log_DC = {'deen': (0.35, 13.43), 'ruen': (0.38, 13.81), 'zhen': (0.43, 12.73)}.get(lang)
     axes.plot(params_rel['data_bytes'], modeling_fn(params_rel['data_bytes'], actual_a_D, actual_log_DC), color='purple', label='Actual')
 

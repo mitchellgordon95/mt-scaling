@@ -40,7 +40,6 @@ if __name__ == "__main__":
     print(f'Missing values: \n {table[table.isnull().any(axis=1)]}')
     table = table.dropna()
 
-
     for lang in table['Lang'].unique():
 
         print(f'Lang: {lang}')

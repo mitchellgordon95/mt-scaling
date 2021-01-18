@@ -25,21 +25,32 @@ table['src_coverage'] = pd.to_numeric(table['src_coverage'], errors='coerce')
 table['trg_coverage'] = pd.to_numeric(table['trg_coverage'], errors='coerce')
 table['vocab_overlap_src'] = pd.to_numeric(table['vocab_overlap_src'], errors='coerce')
 table['vocab_overlap_trg'] = pd.to_numeric(table['vocab_overlap_trg'], errors='coerce')
+table['line_count'] = pd.to_numeric(table['line_count'], errors='coerce')
 
 for lang in table['Lang'].unique():
+    for bpe in table['BPE'].unique():
 
-    print(f'Lang: {lang}')
-    rel = table[table['Lang'] == lang].sort_values('data_bytes')
+        print(f'Lang: {lang}, BPE: {bpe}')
+        rel = table[(table['Lang'] == lang) & (table['BPE'] == bpe)].sort_values('data_bytes')
 
-    fig, axes = plt.subplots()
-    axes.set_xlabel("Data Size (Bytes)")
-    axes.set_xscale('log')
-    axes.yaxis.set_major_formatter(mtick.PercentFormatter())
-    axes.set_ylim((0,101))
-    axes.set_title(f'Training Data Subset Statistics {lang}')
+        fig, axes = plt.subplots()
+        axes.set_xlabel("Data Size (Bytes)")
+        axes.set_xscale('log')
+        axes.yaxis.set_major_formatter(mtick.PercentFormatter())
+        axes.set_ylim((0,101))
+        axes.set_title(f'Training Data Subset Statistics {lang}')
 
-    axes.plot(rel['data_bytes'], (rel['src_coverage'] + rel['trg_coverage']) / 2 * 100, label="Development Tokens Seen During Training")
-    axes.plot(rel['data_bytes'], (rel['vocab_overlap_src'] + rel['vocab_overlap_trg']) / 2 * 100, label="Subset BPE Vocab Overlap w/ Full BPE Vocab")
+        axes.plot(rel['data_bytes'], (rel['src_coverage'] + rel['trg_coverage']) / 2 * 100, label="Development Tokens Seen During Training")
+        axes.plot(rel['data_bytes'], (rel['vocab_overlap_src'] + rel['vocab_overlap_trg']) / 2 * 100, label="Subset BPE Vocab Overlap w/ Full BPE Vocab")
 
-    axes.legend()
-    fig.savefig(f'plots_out/{lang}_dev_coverage.png')
+        axes.legend()
+        fig.savefig(f'plots_out/{lang}_bpe.{bpe}_dev_coverage.png')
+
+fig, axes = plt.subplots()
+axes.set_xlabel("Lines")
+axes.set_ylabel("Bytes")
+axes.set_title(f'Lines vs. Bytes')
+
+axes.scatter(table['line_count'], table['data_bytes'])
+
+fig.savefig(f'plots_out/lines_vs_bytes.png')

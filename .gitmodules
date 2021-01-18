@@ -1,0 +1,3 @@
+[submodule "hpo_nmt"]
+	path = hpo_nmt
+	url = git@github.com:Este1le/hpo_nmt.git

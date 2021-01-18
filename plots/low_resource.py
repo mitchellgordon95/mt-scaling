@@ -21,7 +21,7 @@ table = pd.read_csv(StringIO(csv), sep="\s+")
 table['bleu_dev'] = pd.to_numeric(table['bleu_dev'], errors='coerce')
 table['ent_dev'] = pd.to_numeric(table['ent_dev'], errors='coerce')
 
-table['params'] = 2 * 6 * (4 * 512**2 + 2 * 512 * 4 * 512)
+table['params'] = 2 * 3 * (4 * 512**2 + 2 * 512 * 4 * 512)
 
 for lang in table['Lang'].unique():
 
@@ -65,9 +65,10 @@ for lang in table['Lang'].unique():
     axes.scatter(rel['ent_dev'], rel['bleu_dev'])
 
     # Linear best fit line
-    best_fit = scipy.stats.linregress(rel['ent_dev'], rel['bleu_dev'])
-    predicted_bleu = rel['ent_dev'] * best_fit.slope + best_fit.intercept
-    axes.plot(rel['ent_dev'], predicted_bleu, label=f'y = {best_fit.slope:.2f}x + {best_fit.intercept:.2f}')
+    def exp_decay(ent, C, k):
+        return C * np.exp(k * ent)
+    (C, k), _ = scipy.optimize.curve_fit(exp_decay, rel['ent_dev'], rel['bleu_dev'], maxfev=5000, p0=[1, -0.5])
+    axes.plot(rel['ent_dev'].sort_values(), exp_decay(rel['ent_dev'].sort_values(), C, k), label=f'y = {C:.2f} e ^ ({k:.2f} x)')
     axes.legend()
 
     fig.savefig(f'plots_out/{lang}_data_scaling_bleu.png')

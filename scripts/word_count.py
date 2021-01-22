@@ -13,9 +13,7 @@ def word_count(train: str):
 
     freqs = np.array(list(train_words.values()))
 
-    print(f'Unique Words Seen: {len(train_words)}')
-    print(f'Greater than 5: {np.sum(freqs > 5)}')
-
+    print(f'{len(train_words)} {np.sum(freqs > 5)}')
 
 if __name__ == "__main__":
     fire.Fire(word_count)

@@ -1,0 +1,50 @@
+# Constant branch point: AttnHeads=AttnHeads.8
+# Constant branch point: BPE=BPE.2000
+# Constant branch point: Baseline=Baseline.baseline
+# Constant branch point: BatchSize=BatchSize.500
+# Constant branch point: BleuType=BleuType.bpe
+# Constant branch point: CheckpointFreq=CheckpointFreq.500
+# Constant branch point: FeedForward=FeedForward.2048
+# Constant branch point: LabelSmoothing=LabelSmoothing.0.1
+# Constant branch point: MaxUpdates=MaxUpdates.350000
+# Constant branch point: ModelSize=ModelSize.512
+# Constant branch point: ShuffleSeed=ShuffleSeed.1
+# Variable branch points: DataPercent Lang Layers
+DataPercent	Lang	Layers	bleu_dev	data_bytes	ent_dev
+25	swen	6	1.67	1642496	4.30023
+50	swen	6	8.05	3297280	3.4409
+100	tlen	3	33.07	6354944	2.27338
+25	soen	6	1.15	1601536	4.45372
+12.5	swen	1	6.18	827392	4.32393
+100	soen	6	6.84	6340608	3.36593
+50	tlen	3	20.44	3186688	3.02934
+50	tlen	6	13.58	3186688	3.3413
+25	tlen	6	5.08	1593344	4.13088
+25	tlen	1	11.38	1593344	3.82547
+100	swen	6	21.74	6592512	2.50292
+50	swen	3	16.23	3297280	3.0615
+12.5	tlen	3	3.37	800768	4.63482
+25	soen	3	2.69	1601536	4.30624
+100	tlen	6	28.57	6354944	2.35616
+100	swen	3	25.80	6592512	2.34036
+12.5	swen	3	3.19	827392	4.59671
+12.5	soen	1	2.28	790528	4.88401
+100	soen	1	10.32	6340608	3.35411
+25	swen	1	10.63	1642496	3.72118
+50	soen	1	6.80	3160064	3.81224
+25	tlen	3	9.62	1593344	3.8841
+12.5	soen	6	0.33	790528	4.962
+100	soen	3	9.75	6340608	3.25059
+25	swen	3	7.88	1642496	3.79809
+12.5	tlen	1	6.17	800768	4.45922
+100	tlen	1	31.01	6354944	2.42193
+50	soen	3	5.82	3160064	3.75461
+12.5	swen	6	0.60	827392	4.78348
+50	tlen	1	21.59	3186688	3.04383
+25	soen	1	4.35	1601536	4.31668
+50	soen	6	2.60	3160064	3.96489
+12.5	tlen	6	1.06	800768	4.86373
+12.5	soen	3	0.55	790528	4.89083
+100	swen	1	24.34	6592512	2.45724
+50	swen	1	17.65	3297280	3.051
+

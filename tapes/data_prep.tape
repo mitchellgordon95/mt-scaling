@@ -7,7 +7,7 @@ task bpe_data : subword_nmt
   > TRG_VOCAB
   :: SRC=(Lang: deen="de" ruen="ru" zhen="zh" soen="so" swen="sw" tlen="tl")
   :: TRG=(Lang: deen="en" ruen="en" zhen="en" soen="en" swen="en" tlen="en")
-  :: bpe_size=(BPE: 30000 2000)
+  :: bpe_size=(BPE: 30000 2000 50000)
   # We use a GPU here even though we don't need it. See https://git.io/JIKDI
   :: pyenv=@ .submitter=@ .resource_flags=$resource_flags_decode .action_flags=@ {
 
@@ -98,4 +98,15 @@ task subset_stats : scripts : subword_nmt
 
   python $scripts/coverage.py subset_src_vocab $src_vocab | awk '{print $1}' > $src_vocab_overlap
   python $scripts/coverage.py subset_trg_vocab $trg_vocab | awk '{print $1}' > $trg_vocab_overlap
+}
+
+task word_count : scripts
+  < subset_trg=$TRAIN_SUBSET_TRG@subset_data
+  > unique_words
+  > seen_five
+  :: pyenv=@ {
+  python $scripts/word_count.py $subset_trg > tmp
+  cat tmp | awk '{print $1}' > $unique_words
+  cat tmp | awk '{print $2}' > $seen_five
+  rm tmp
 }

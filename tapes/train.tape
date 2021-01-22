@@ -95,12 +95,20 @@ task continue_train : scripts
    exit $status
 }
 
-task bleu_dev : scripts
-    < src=$DEV_SRC@bpe_data
+task detok
     < trg=$DEV_TRG@bpe_data
+    > out {
+    # De-bpe, detruecase, detok, sacrebleu
+    cat $trg | sed -r 's/@@( |$)//g' | ~/mosesdecoder/scripts/recaser/detruecase.perl | ~/mosesdecoder/scripts/tokenizer/detokenizer.perl > $out
+}
+
+task bleu_dev : scripts : sacrebleu
+    < src=$DEV_SRC@bpe_data
+    < trg=(BleuType: bpe=$DEV_TRG@bpe_data detok=$out@detok)
     < model=$model@train
     > out out_log out_scores bleu
-    ::  pyenv=@
+    :: bleu_type=(BleuType: bpe detok) 
+    :: pyenv=@
     :: .submitter=@ :: .action_flags=@ :: .resource_flags=$resource_flags_decode {
 
   python3 -m sockeye.translate \
@@ -117,8 +125,12 @@ task bleu_dev : scripts
     cat out.all | cut -f 2 > $out
     mv out.all.log $out_log
 
-    # TODO: use something else so we don't get yelled at by Matt?
-    ~/mosesdecoder/scripts/generic/multi-bleu.perl -lc $trg < $out > $bleu
+    if [[ $bleu_type == bpe ]]; then
+      ~/mosesdecoder/scripts/generic/multi-bleu.perl -lc $trg < $out > $bleu
+    else
+      # De-bpe, detruecase, detok, sacrebleu
+      cat $out | sed -r 's/@@( |$)//g' | ~/mosesdecoder/scripts/recaser/detruecase.perl | ~/mosesdecoder/scripts/tokenizer/detokenizer.perl | sacrebleu $trg > $bleu
+    fi
 }
 
 
@@ -141,4 +153,14 @@ task score_dev : scripts
     > scores
 
   cat scores | awk '{sum+=$1;count++} END {print sum/count}' > avgscore
+}
+
+task language_model : scripts
+   < trg_vocab=$SOCKEYE_VOCAB_TRG@build_vocab
+   < train_trg=$TRAIN_SUBSET_TRG@subset_data
+   < dev_trg=$DEV_TRG@bpe_data
+   > avgscore 
+   :: lm_type=(LmType: unigram uniform)
+   ::  pyenv=@ {
+   python $scripts/language_model.py $trg_vocab $train_trg $dev_trg --lm_type=$lm_type > $avgscore
 }

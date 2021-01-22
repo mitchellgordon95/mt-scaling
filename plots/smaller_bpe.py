@@ -63,13 +63,12 @@ for lang in ['deen']: #table['Lang'].unique():
             params_rel = rel[rel['params'] == params].sort_values('data_bytes')
             scatter = axes[idx].scatter(params_rel['data_bytes'], params_rel['ent_dev'], s=15, color=cmap(norm(params)))
             predicted_line = joint_modeling_fn((params_rel['data_bytes'], params_rel['params']), a_N, log_N_C, a_D, log_D_C)
-            # axes[idx].plot(params_rel['data_bytes'], predicted_line, linestyle=':', color=scatter.get_facecolor()[0])
+            axes[idx].plot(params_rel['data_bytes'], predicted_line, linestyle=':', color=scatter.get_facecolor()[0])
 
         axes[idx].axvline(5242880, linestyle="--", label="5 MB")
         axes[idx].set_xlabel("Data Size (Bytes)")
         axes[idx].set_xscale('log')
-        axes[idx].set_ylim((2,8))
-        # axes[idx].set_yscale('log')
+        axes[idx].set_yscale('log')
         axes[idx].legend()
 
     # Note: have to set formatters after setting scale

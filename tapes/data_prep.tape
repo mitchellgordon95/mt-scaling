@@ -102,6 +102,7 @@ task subset_stats : scripts : subword_nmt
 
 task word_count : scripts
   < subset_trg=$TRAIN_SUBSET_TRG@subset_data
+  < subset_src=$TRAIN_SUBSET_SRC@subset_data # NOTE: need this for the summary
   > unique_words
   > seen_five
   :: pyenv=@ {

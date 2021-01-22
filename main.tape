@@ -93,8 +93,11 @@ summary data_scaling {
   of language_model > lm_score {
     cat $avgscore > $lm_score
   }
-  of word_count > unique_word_count {
+  of word_count > unique_word_count > data_bytes {
     cat $unique_words > $unique_word_count
+    src_size=$(du $subset_src | awk '{print $1}')
+    trg_size=$(du $subset_trg | awk '{print $1}')
+    python -c "print(($src_size + $trg_size) * 512)" > $data_bytes
   }
 }
 

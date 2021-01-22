@@ -11,6 +11,7 @@ except FileExistsError: pass
 csv = read_file(sys.argv[1]) if len(sys.argv) > 1 else ducttape_summary('subset_stats')
 table = pd.read_csv(StringIO(csv), sep="\s+")
 table['line_count'] = pd.to_numeric(table['line_count'], errors='coerce')
+table['data_bytes'] = pd.to_numeric(table['data_bytes'], errors='coerce')
 
 fig, axes = plt.subplots()
 axes.set_xlabel("Lines")

@@ -7,12 +7,16 @@ import "tapes/train.tape"
 
 plan data_scaling {
   # WMT
-  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 6) * (ModelSize: 512) * (FeedForward: 2048) * (BleuType: *)
-  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 6) * (ModelSize: 624) * (FeedForward: 2496) * (BleuType: *)
-  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 3) * (ModelSize: 512) * (FeedForward: 2048) * (BleuType: *)
-  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 1) * (ModelSize: 512) * (FeedForward: 2048) * (BleuType: *)
-  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 1) * (ModelSize: 256) * (FeedForward: 1024) * (BleuType: *)
-  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 1) * (ModelSize: 128) * (FeedForward: 512) * (BleuType: *)
+  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 6) * (ModelSize: 512) * (FeedForward: 2048)
+  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 6) * (ModelSize: 624) * (FeedForward: 2496)
+  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 3) * (ModelSize: 512) * (FeedForward: 2048)
+  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 1) * (ModelSize: 512) * (FeedForward: 2048)
+  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 1) * (ModelSize: 256) * (FeedForward: 1024)
+  reach bleu_dev, score_dev via (Lang: deen ruen zhen) * (DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025) * (Layers: 1) * (ModelSize: 128) * (FeedForward: 512)
+
+  reach bleu_dev, score_dev via (Lang: ruen zhen) * (DataPercent: 0.0125) * (Layers: 6) * (ModelSize: 512) * (FeedForward: 2048)
+  reach bleu_dev, score_dev via (Lang: ruen zhen) * (DataPercent: 0.0125) * (Layers: 6) * (ModelSize: 624) * (FeedForward: 2496)
+  reach bleu_dev, score_dev via (Lang: ruen zhen) * (DataPercent: 0.0125) * (Layers: 3) * (ModelSize: 512) * (FeedForward: 2048)
 }
 
 plan sacrebleu {
@@ -41,7 +45,7 @@ plan random_baseline {
 }
 
 plan low_resource {
-  reach bleu_dev, score_dev via (Lang: swen soen tlen) * (DataPercent: 100 50 25 12.5) * (Layers: 1 3 6) * (ModelSize: 512) * (FeedForward: 2048) * (BPE: 2000) * (ShuffleSeed: 1) * (BatchSize: 500) * (CheckpointFreq: 500)
+  reach bleu_dev, score_dev via (Lang: swen tlen) * (DataPercent: 100 95 90 80 70 60 50) * (Layers: 6) * (ModelSize: 512) * (FeedForward: 2048) * (BPE: 2000) * (ShuffleSeed: *) * (BatchSize: 500) * (CheckpointFreq: 500)
 }
 
 plan subset_stats {
@@ -50,8 +54,7 @@ plan subset_stats {
 }
 
 plan language_model {
-  reach language_model via (Lang: deen) * (DataPercent: 25 12.5 1.56) * (BPE: 30000 2000 50000)
-  reach language_model via (Lang: ruen zhen) * (DataPercent: 25 12.5 1.56) * (BPE: 30000 2000)
+  reach language_model via (Lang: deen ruen zhen) * (DataPercent: 25 0.05) * (BPE: 30000 2000)
   reach language_model via (Lang: tlen soen swen) * (DataPercent: 100) * (BPE: 2000)
 }
 

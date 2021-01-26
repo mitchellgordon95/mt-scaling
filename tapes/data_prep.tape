@@ -55,8 +55,8 @@ task subset_data
   < train_trg=$TRAIN_TRG@bpe_data
   > TRAIN_SUBSET_SRC
   > TRAIN_SUBSET_TRG
-  :: seed=(ShuffleSeed: 42 1 2)
-  :: data_percent=(DataPercent: 100 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025 0.0125)
+  :: seed=(ShuffleSeed: 42 1 2 3 4)
+  :: data_percent=(DataPercent: 100 95 90 80 70 60 50 25 12.5 6.25 3.125 1.56 0.78 0.39 0.2 0.1 0.05 0.025 0.0125)
   :: pyenv=@ {
 
   lines=$(wc -l $train_src | awk '{print $1}')

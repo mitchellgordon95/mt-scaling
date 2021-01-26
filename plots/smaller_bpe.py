@@ -30,8 +30,8 @@ for idx, plan in enumerate(['data_scaling', 'smaller_bpe']):
     tables.append(table)
 
 
-for lang in ['deen']: #table['Lang'].unique():
-    # print(f'Lang: {lang}')
+for lang in tables[0]['Lang'].unique():
+    print(f'Lang: {lang}')
 
     fig, axes = plt.subplots(1, 2, figsize=(6,2.5))
     axes[0].set_ylabel("Dev Cross Entropy")
@@ -48,16 +48,12 @@ for lang in ['deen']: #table['Lang'].unique():
 
     for idx, table in enumerate(tables):
         rel = table[table['data_bytes'] > 5242880] # Only use data greater than 5 MB for fitting the curves
-        if idx == 0: # TODO: always do this filtering once we have multiple languages with smaller bpes
-            rel = rel[rel['Lang'] == lang]
+        rel = rel[rel['Lang'] == lang]
 
         (a_N, log_N_C, a_D, log_D_C), _ = scipy.optimize.curve_fit(joint_modeling_fn, (rel['data_bytes'], rel['params']), rel['ent_dev'], maxfev=5000, p0=[0.071, math.log(8.8e10), 0.3, math.log(5e6)])
 
         print(f'Fit: {(a_N, log_N_C, a_D, log_D_C)}')
-        if idx == 0: # TODO: always do this filtering once we have multiple languages with smaller bpes
-            rel = table[table['Lang'] == lang]
-        else:
-            rel = table
+        rel = table[table['Lang'] == lang]
 
         for params in sorted(table['params'].unique()):
             params_rel = rel[rel['params'] == params].sort_values('data_bytes')

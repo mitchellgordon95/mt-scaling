@@ -13,10 +13,12 @@ import sys
 
 
 def format_num(num):
+    sign = "-" if num < 0 else ""
+    num = abs(num)
     if num > 1000 and num < 1000000:
-        return f'{int(num / 1000)}K'
+        return f'{sign}{int(num / 1000)}K'
     if num >= 1000000:
-        return f'{int(num / 1000000)}M'
+        return f'{sign}{int(num / 1000000)}M'
     return str(num)
 
 
@@ -152,6 +154,7 @@ def plot_dollars_bleu(table, scale_params, bleu_params):
 
     for lang in table['Lang'].unique():
         rel = table[(table['Lang'] == lang)]
+
         (C, k) = bleu_params[lang]
         (a_N, log_N_C, a_D, log_D_C) = scale_params[lang]
 

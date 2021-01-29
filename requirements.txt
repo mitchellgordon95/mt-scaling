@@ -1,2 +1,4 @@
 sockeye=1.18.106
 fire
+matplotlib
+numpy

@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import matplotlib.ticker as mticker
-import subprocess
 import pandas as pd
 import numpy as np
 from io import StringIO
@@ -21,18 +19,6 @@ def plot_data_scaling(table):
     fig, axes = plt.subplots(1, 2, figsize=(6, 2.5))
     axes[0].set_ylabel("Dev Cross Entropy")
 
-    for ax in axes:
-        ax.set_yscale('log')
-        ax.yaxis.set_minor_formatter(mticker.StrMethodFormatter('{x:.0f}'))
-
-    min_params, max_params = table['params'].min(), table['params'].max()
-    cmap = mpl.cm.viridis
-    norm = mpl.colors.LogNorm(vmin=min_params, vmax=max_params)
-
-    cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])
-    cbar = mpl.colorbar.ColorbarBase(cbar_ax, cmap=cmap, norm=norm)
-    cbar.set_label("# Non-Embedding Parameters")
-
     col = -1
     scale_params = {}
     for lang in table['Lang'].unique():
@@ -51,16 +37,16 @@ def plot_data_scaling(table):
         axes[col].set_xlabel("Data Size (Bytes)")
         axes[col].set_title(f'{format_lang(lang)}')
         axes[col].set_xscale('log')
+        axes[col].xaxis.set_minor_formatter(mticker.FuncFormatter(lambda x, _: format_num(x)))
+        axes[col].set_yscale('log')
+        axes[col].yaxis.set_minor_formatter(mticker.StrMethodFormatter('{x:.1f}'))
 
         for params in sorted(table['params'].unique()):
             params_rel = rel[rel['params'] == params].sort_values('data_bytes')
-            axes[col].scatter(params_rel['data_bytes'], params_rel['ent_dev'], s=15, color=cmap(norm(params)))
+            scatter = axes[col].scatter(params_rel['data_bytes'], params_rel['ent_dev'], s=15)
 
-        predicted_line = modeling_fn(params_rel['data_bytes'], a_D, log_D_C)
-        axes[col].plot(params_rel['data_bytes'], predicted_line, linestyle=':', color="red")
-        # err_min = modeling_fn(params_rel['data_bytes'], a_D - a_D_err, log_D_C - log_D_C_err)
-        # err_max = modeling_fn(params_rel['data_bytes'], a_D + a_D_err, log_D_C + log_D_C_err)
-        # axes[col].fill_between(params_rel['data_bytes'], err_min, err_max, alpha=0.2, color="red")
+            predicted_line = modeling_fn(params_rel['data_bytes'], a_D, log_D_C)
+            axes[col].plot(params_rel['data_bytes'], predicted_line, linestyle=':', color=scatter.get_facecolor()[0])
 
     fig.savefig(f'plots_out/lr_data_scaling.png', bbox_inches='tight')
     return scale_params
@@ -70,7 +56,7 @@ def plot_bleu(table):
     fig, axes = plt.subplots()
     axes.set_xlabel("Dev Cross Entropy")
     axes.set_ylabel("Dev BLEU")
-    axes.set_xlim((table['ent_dev'].max() + 0.5, 1))
+    axes.set_xlim((table['ent_dev'].max() + 0.5, 1.5))
 
     bleu_params = {}
     for lang in table['Lang'].unique():
@@ -116,11 +102,14 @@ def plot_dollars_bleu(table, scale_params, bleu_params):
 
         max_data = rel['data_bytes'].max()
         rel['dollars'] = (rel['data_bytes'] - max_data) / 100
-        scatter = axes.scatter(rel['dollars'], rel['bleu_dev'], label=lang)
-        axes.plot(rel['dollars'], data_to_bleu(rel['data_bytes'], C, K, a_D), color=scatter.get_facecolor()[0])
+        scatter = axes.scatter(rel['dollars'], rel['bleu_dev'], label=format_lang(lang))
+        lin = np.linspace(rel['dollars'].min(), 60000)
+        axes.plot(lin, data_to_bleu((lin * 100) + max_data, C, K, a_D), linestyle=":", color=scatter.get_facecolor()[0])
+        axes.axhline(44.5, linestyle="--", color="lavender")
+        axes.axhline(35, linestyle="--", color="lavender")
         # min_err = data_to_bleu(rel['data_bytes'], C-C_err, K-K_err, a_D-a_D_err)
         # max_err = data_to_bleu(rel['data_bytes'], C+C_err, K+K_err, a_D+a_D_err)
-        # axes.fill_between(rel['data_bytes'], min_err, max_err, alpha=0.2, color=scatter.get_facecolor()[0])
+        # axes.fill_between(rel['dollars'], min_err, max_err, alpha=0.2, color=scatter.get_facecolor()[0])
 
     axes.legend()
     fig.savefig(f'plots_out/lr_dollars_to_bleu.png', bbox_inches='tight')

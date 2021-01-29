@@ -5,7 +5,7 @@
 package sacrebleu :: .versioner=pip .package="sacrebleu" .tag="1.2.12" { }
 package subword_nmt :: .versioner=pip .package="subword-nmt" .tag="0.3.5" { }
 package mosesdecoder :: .versioner=git .repo="https://github.com/moses-smt/mosesdecoder" .ref=HEAD { }
-package scripts :: .versioner=disk .path="/exp/mgordon/mt-scaling/scripts" { }
+package scripts :: .versioner=disk .path="TODO" { }
 
 global {
 
@@ -38,7 +38,7 @@ global {
   resource_flags_decode="-q gpu.q@@2080 -l gpu=1,mem_free=4g,h_rt=48:00:00"
 
   # SGE: flags for notifying about job completion (put in your email address!)
-  action_flags="-m ae -M mitchell.gordon95@gmail.com"
+  action_flags="-m ae -M TODO"
 
   # The default submitter: shell (run locally) or sge (run on a grid)
   submitter="sge"

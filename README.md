@@ -18,7 +18,7 @@ with the current version of main.tape.
 
 These experiments are managed using the [ducttape framework](https://github.com/jhclark/ducttape), version
 [0.4](https://github.com/ExperimentWith/ducttape/files/1725708/ducttape.v0.4.binary.zip). We recommend
-reading the
+reading the [introduction](http://mitchgordon.me/ml/2021/02/09/ducttape.html) and/or the
 [tutorial](https://github.com/jhclark/ducttape/blob/master/tutorial/TUTORIAL.md)
 before attempting to work with this repository. Before running any tasks, there are a few steps you should take:
 
